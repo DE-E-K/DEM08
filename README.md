@@ -35,8 +35,29 @@ pip install pandas openpyxl
 ```
 
 ## Folder Structure
-*   **`Module 8 Data/`**: Input directory containing the raw data folders (`Cloud Training`, `PowerBI Training`).
-*   **`Module 8 Data/Consolidated Data/`**: Output directory where the consolidated CSV files will be saved.
+```text
+DEM08/
+├── Module 8 Data/
+│   ├── Cloud Training/
+│   │   ├── Labs & Quizes/
+│   │   ├── Participation/
+│   │   ├── Status of Learners/
+│   │   └── Zoom Attendance/
+│   ├── PowerBI Training/
+│   │   ├── Labs & Quizes/
+│   │   ├── Participation/
+│   │   ├── Status of Learners/
+│   │   └── Zoom Attendance/
+│   └── Consolidated Data/
+├── consolidate_labs.py
+├── consolidate_participation.py
+├── consolidate_status.py
+├── consolidate_zoom.py
+├── validate_consolidation.py
+├── README.md
+├── Data_Consolidation_Documentation.md
+└── requirements.txt
+```
 
 ## Scripts Description
 
