@@ -1,9 +1,14 @@
 import pandas as pd
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def consolidate_labs():
     """
-    Consolidates 'Labs & Quizes/labs & quizzes.xlsx' from 'Cloud Training' and 'PowerBI Training'.
+    Consolidates 'Labs & Quizes/labs_and_quizzes.xlsx' from 'Cloud Training' and 'PowerBI Training'.
+    Extracts data from 'Labs' and 'Quizzes' sheets, adding a 'marks_type' column.
     """
     
     base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Module 8 Data")
@@ -12,8 +17,8 @@ def consolidate_labs():
     target_dirs = ["Cloud Training", "PowerBI Training"]
     all_dfs = []
     
-    print(f"Starting Labs consolidation from base directory: {base_dir}")
-    print("-" * 50)
+    logging.info(f"Starting Labs and Quizzes consolidation from base directory: {base_dir}")
+    logging.info("-" * 50)
     
     for training_type in target_dirs:
         # Path to specific excel file
@@ -23,46 +28,73 @@ def consolidate_labs():
         
         if os.path.exists(file_path):
             try:
-                print(f"Processing: {training_type} -> {file_path}")
-                df = pd.read_excel(file_path)
+                logging.info(f"Processing: {training_type} -> {file_path}")
                 
-                # Add Metadata
-                df['Training Type'] = training_type
-                df['Source File'] = "labs and quizzes.xlsx"
+                # Reading all sheets
+                xls = pd.read_excel(file_path, sheet_name=None)
+                
+                for sheet_name, df in xls.items():
+                    marks_type = ""
+                    if "lab" in sheet_name.lower():
+                        marks_type = "Lab"
+                    elif "quiz" in sheet_name.lower():
+                        marks_type = "Quiz"
+                    else:
+                        logging.warning(f"Skipping sheet '{sheet_name}' as it is not a Lab or Quiz.")
+                        continue
+                    
+                    logging.info(f"Processing sheet: '{sheet_name}' as '{marks_type}'")
 
-                # Transform to Long Format
-                # Identify columns that start with "Week"
-                week_columns = [col for col in df.columns if col.startswith("Week")]
-                
-                # Melt the dataframe
-                df_long = df.melt(
-                    id_vars=['email', 'Training Type', 'Source File'], 
-                    value_vars=week_columns,
-                    var_name='Week', 
-                    value_name='Score'
-                )
-                
-                all_dfs.append(df_long)
-                print(f"Loaded {len(df_long)} rows (Long Format).")
+                    # Add Metadata
+                    # Changing column name to lowercase to match requirements exactly
+                    df['training type'] = training_type
+
+                    # Transform to Long Format
+                    # Identify columns that start with "Week"
+                    week_columns = [col for col in df.columns if col.startswith("Week")]
+                    
+                    if not week_columns:
+                        logging.warning(f"No 'Week' columns found in sheet '{sheet_name}'.")
+                        continue
+                    
+                    # Melt the dataframe
+                    df_long = df.melt(
+                        id_vars=['email', 'training type'], 
+                        value_vars=week_columns,
+                        var_name='Week', 
+                        value_name='Score'
+                    )
+                    
+                    df_long['marks_type'] = marks_type
+                    
+                    # Reorder columns to ensure exact matching:
+                    # email, training type, Week, marks_type (Quiz or Lab) and Score
+                    df_long = df_long[['email', 'training type', 'Week', 'marks_type', 'Score']]
+                    
+                    all_dfs.append(df_long)
+                    logging.info(f"Loaded {len(df_long)} rows (Long Format, {marks_type}).")
             except Exception as e:
-                print(f"rror reading {file_path}: {e}")
+                logging.error(f"Error reading {file_path}: {e}")
         else:
-            print(f"Warning: File not found - {file_path}")
+            logging.warning(f"File not found - {file_path}")
 
     # Process Master File
     if all_dfs:
         final_df = pd.concat(all_dfs, ignore_index=True)
         
+        # Remove empty scores
+        # final_df = final_df.dropna(subset=['Score']) # Not requested explicitly, preserving all rows
+
         if not os.path.exists(output_dir_master):
             os.makedirs(output_dir_master)
             
         output_file_master = os.path.join(output_dir_master, "Labs_and_Quizzes.csv")
         final_df.to_csv(output_file_master, index=False)
         
-        print(f"\nSUCCESS: Consolidated Labs file saved to: {output_file_master}")
-        print(f"Total Records (Long Format): {len(final_df)}")
+        logging.info(f"SUCCESS: Consolidated Labs and Quizzes file saved to: {output_file_master}")
+        logging.info(f"Total Records (Long Format): {len(final_df)}")
     else:
-        print("\nWARNING: No Labs data found to consolidate.")
+        logging.warning("No Labs or Quizzes data found to consolidate.")
 
 if __name__ == "__main__":
     consolidate_labs()
