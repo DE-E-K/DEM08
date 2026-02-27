@@ -104,3 +104,9 @@ py validate_consolidation.py
 
 ## Documentation
 For detailed information on the consolidation logic and Power BI integration steps, refer to the [Data Consolidation Documentation](Data_Consolidation_Documentation.md)
+
+[Interact with Report Local when you have the Ms Power BI](Dare dashboard.pbix) 
+
+<img width="1384" height="781" alt="image" src="https://github.com/user-attachments/assets/9137ee4f-9132-4324-bb05-cbc2fab6f952" />
+
+[Online Version Dare Dashboard](https://app.powerbi.com/view?r=eyJrIjoiNWRiZWE5NzMtNDk1ZS00ZjY3LWI2MDItMDQzN2E5NWY2ZGIzIiwidCI6ImIyMGE4ZjRkLTBkNmEtNGYyZS04M2EyLTE4MWM5NjhmODg4MiIsImMiOjl9)
